@@ -20,4 +20,4 @@ Book Hosted On GitHub Pages:  https://holazzer.github.io/RL-book-zh-cn/
 
 ## 其他
 
-使用docsify构建
+使用[docsify](https://docsify.js.org)构建
