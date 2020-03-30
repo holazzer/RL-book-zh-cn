@@ -21,3 +21,11 @@ Book Hosted On GitHub Pages:  https://holazzer.github.io/RL-book-zh-cn/
 ## 其他
 
 使用[docsify](https://docsify.js.org)构建
+
+
+## 部分混用的术语
+
+英文|混用的翻译
+:---|:---
+Reinforced learning|增强学习、强化学习
+Learning Agent|学习体、学习代理（其实都不太够味儿，但是迁就机翻，其实说白了，就是学习器（工 具 人））
