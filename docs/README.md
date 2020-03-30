@@ -22,6 +22,14 @@ Book Hosted On GitHub Pages:  https://holazzer.github.io/RL-book-zh-cn/
 
 使用[docsify](https://docsify.js.org)构建
 
+数学公式使用[docsify-Katex](https://github.com/upupming/docsify-katex)
+
+数学公式测试:
+
+$$
+\lim_{n \rightarrow \infin } \dfrac{1}{n} =  0
+$$
+
 
 ## 部分混用的术语
 
@@ -29,3 +37,4 @@ Book Hosted On GitHub Pages:  https://holazzer.github.io/RL-book-zh-cn/
 :---|:---
 Reinforced learning|增强学习、强化学习
 Learning Agent|学习体、学习代理（其实都不太够味儿，但是迁就机翻，其实说白了，就是学习器（工 具 人））
+
