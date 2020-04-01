@@ -102,7 +102,7 @@
 现在我们用值函数的方法解决这个问题。首先，我们将建立一个数字表，每个可能的游戏状态对应一个数字。每个数字都是对我们从该状态获胜的可能性的最新估计。我们将此估计值视为状态值，整个表是学习到的值函数。如果当前对我们从$A$获胜的可能性的估计高于从$B$得出，则状态$A$的价值高于状态$B$，或者被认为比状态$B$更好。假设我们总是用X下棋，那么对于所有有3个X在一行、一列、一斜的状态，获胜的机率是1，因为我们已经赢了。同样，对于所有3个O在一行，一列、一斜的状态，获胜的概率为0，因为我们无法从中获胜。我们将所有其他状态的初始值设置为0.5，这表示我们有50％的获胜机会。
 
 
-然后我们与对手进行了许多比赛。为了选择我们的动作，我们检查了每个可能动作（棋盘上的每个空白空间）所产生的状态，并在表中查找了它们的当前值。在大多数情况下，我们会贪婪地移动，选择导致价值最大化（即获胜概率最高）的状态的移动。但是，有时我们会从其他动作中随机选择。这些之所以被称为探索性动作(exploratory moves)，是因为它们使我们体验到了原本可能从未见过的状态。在游戏中进行和考虑的一系列动作可以如图1.1所示。在玩游戏时，我们会更改游戏过程中所处状态的值。我们试图使他们更准确地估计获胜的概率。为此，我们将每次贪婪移动之后的状态值备份到移动之前的状态，如图1.1中的箭头所示。更准确地说，更新较早状态的当前值使其更接近较晚状态的值。这可以通过将较早状态的值向较晚状态的值移动一小部分来完成。如果让$S_t$表示贪婪移动之前的状态，而$S_{t+1}$表示贪婪移动之前的状态，则对$S_t$的估计值的更新（记为$V(S_t)$）可以写为
+然后我们与对手进行了许多比赛。为了选择我们的动作，我们检查了每个可能动作（棋盘上的每个空白空间）所产生的状态，并在表中查找了它们的当前值。在大多数情况下，我们会贪婪地移动，选择导致价值最大化（即获胜概率最高）的状态的移动。但是，有时我们会从其他动作中随机选择。这些之所以被称为探索性动作(exploratory moves)，是因为它们使我们体验到了原本可能从未见过的状态。在游戏中进行和考虑的一系列动作可以如图1.1所示。在玩游戏时，我们会更改游戏过程中所处状态的值。我们试图使他们更准确地估计获胜的概率。为此，我们将每次贪婪移动之后的状态值备份到移动之前的状态，如图1.1中的箭头所示。更准确地说，更新较早状态的当前值使其更接近较晚状态的值。这可以通过将较早状态的值向较晚状态的值移动一小部分来完成。如果让$S_t$表示贪婪移动之前的状态，而$S_{t+1}$表示贪婪移动之后的状态，则对$S_t$的估计值的更新（记为$V(S_t)$）可以写为
 $$
 V(S_t) \leftarrow V(S_t) + \alpha \left[ V(S_{t+1}) - V(S_t) \right]
 $$
@@ -185,4 +185,149 @@ $$
 
 ## Extra
 
+Extra中出现的内容都不是原书中的内容，但是我觉得想和大家分享，或者有必要说明的。
 
+第一章给出了一个Tic-tac-toe的案例，这个案例原文描述地云里雾里的，除了给出一个时序差分的更新公式，其他让人一头雾水。如果您没有看懂，不用担心。
+
+更棒的是，有一份Python代码供你参考，这个代码写的就更棒了。众所周知，使用OOP真的可以使代码变得更加清晰（如果你分文件的话）。
+
+我相信学到后面就应该懂了。
+
+不过如果你现在已经等不及了，那可以暂且参考参考我下面给出的说明：
+
+1. 棋盘上每个格子可以是3种情况：空、X、O。
+2. 棋盘上一共9个格子，每个格子3中状态，一共有$3^9=19683$种可能的状态，这个数真是太小了。
+3. 状态需要用一种方式来表示，在那份代码中，使用了一个类。
+4. 类里面有一个函数叫hash，它的本质就是3进制转10进制，把状态变成0-19682之间的数。
+5. 原文中要求你准备一个表，其实这个表不是给每个格子准备的，而是给每个状态准备的。
+6. 所以，你其实只需要一个$19683$的表格就可以了。
+7. 格子里面存什么？存的是值函数，你学习的就是值函数，输了那么这个值就要降低，将来我就不选，就这样就学到了。
+8. 怎么学？用更新公式： $V(S_t) \leftarrow V(S_t) + \alpha \left[ V(S_{t+1}) - V(S_t) \right]$。因为赢了的状态值是1，输了的是0，通过这样的方法，把后面的0和1传到了前面，把可以走到这里的状态的值函数增大。就像鲁迅先生说的，这世上本就没有路，走的人多了，也就成了路。这里本来没有路，只有0，0.5，1，但是你在随便走的时候发现，他能走到1，这样就做一个标记，告诉大家都走这里，最后走着走着就出来一条路。
+
+
+
+说到这里，咱们也编程试一试吧。
+
+写算法的时候，一种好的方法是先把自己要做的事情都列出来，再去做。我一直都是这么做的。
+
+1. 有一个数组V来储存值函数
+2. 题目假定我们是玩的X，X先下，而且有时候随机下（探索性），有时候选择最好的下（值函数最大），所以写两个函数random_move和greedy_move
+3. 我们是跟随机的对手下，可以复用random_move，耶
+4. 是不是得把玩了多少次写出来，是X赢得多还是O赢得多（记住咱们是X）。写个函数print_res
+5. 是不是得允许我们跟这个X玩两把？写个函数play_with
+6. 好不容易跑出来的，是不是得把数存起来？写个函数save
+
+我随便写了一个，比较简单，大家随便看看：
+
+```python
+import random
+
+alpha = 0.1
+greedy = 0.5
+epoch = 500
+iter_per_epoch = 1000
+
+V = [ 0.5 for _ in range(3**9) ]
+
+t2d = lambda x:int(str(x)[::-1],3)
+d2t = lambda x:[ x//3**i%3 for i in range(9) ]
+win = lambda l,who:(l[0]==who and l[1]==who and l[2]==who) or (l[3]==who and l[4]==who and l[5]==who) or (l[6]==who and l[7]==who and l[8]==who) or (l[0]==who and l[3]==who and l[6]==who) or (l[1]==who and l[4]==who and l[7]==who) or (l[2]==who and l[5]==who and l[8]==who) or (l[0]==who and l[4]==who and l[8]==who) or (l[2]==who and l[4]==who and l[6]==who)
+
+# init
+for i in range(3**9):
+    l = d2t(i)
+    a = win(l,1)
+    b = win(l,2)
+    if a and b:continue # not reached
+    elif a:V[i] = 1.0
+    elif b:V[i] = 0.0
+
+# returns a state randomly
+def random_move(state,who):
+    if who not in (1,2):raise KeyError("'who' can only be 1(for X) or 2(for O)");
+    l = d2t(state)
+    l[ random.choice( [i for i in range(len(l)) if l[i] == 0 ]) ] = who
+    return t2d(''.join(map(str,l)))
+
+# returns a state with best value
+def best_move(state):
+    l = d2t(state)
+    bv = 0  # best value yet
+    bi = -1 # state index for best value
+    for i in ( i for i in range(len(l)) if l[i] == 0): # each possible move
+        s = l.copy();s[i] = 1;
+        ss = t2d(''.join(map(str,s))) # new move state
+        if bv < V[ss]: bv = V[ss]; bi = ss;
+    return bi
+
+def picker():
+    while 1:yield 1;yield 2;
+
+# train
+for i in range(epoch):
+    win_num = lose_num = 0
+    for _ in range(iter_per_epoch):
+        p = picker()
+        s = t2d('000000000') # start with empty board
+        while 1:
+            if next(p) == 1:
+                if random.random() < greedy:
+                    ns = best_move(s)
+                else:
+                    ns = random_move(s,1)
+            else:
+                ns = random_move(s,2)
+            # update
+            V[s] += alpha * (V[ns]-V[s])
+            s = ns
+            if win(d2t(s),1):
+                win_num += 1;break;
+            elif win(d2t(s),2):
+                lose_num += 1;break;
+            elif 0 not in d2t(s):
+                break; # it's a tie
+    print('Epoch %d, win %d lose %d tie %d'%(i,win_num,lose_num,iter_per_epoch-win_num-lose_num))
+
+# save train data
+with open('XO.txt',"w") as f:
+    print(V,file=f)
+
+def print_board(s):
+    l = d2t(s)
+    d = ['_','X','O']
+    for i in range(3):
+        for j in range(3):
+            print(d[l[i*3+j]],end='')
+        print()
+
+# play with
+while input('Play?(y/n)') == 'y':
+    p = picker()
+    s = t2d('000000000')
+    while 1:
+        print_board(s)
+        if next(p) == 1:
+            s = best_move(s) # stop training
+        else:
+            l = d2t(s)
+            while 1:
+                move = int(input('Your move:'))
+                if move not in (i for i in range(len(l)) if l[i] == 0):
+                    print('Invalid move. try again.')
+                    continue
+                else:
+                    break;
+            l[move]=2
+            s = t2d(''.join(map(str,l)))
+            print('s=',s)
+        if win(d2t(s),1):
+            print_board(s)
+            print('Computer wins!');break;
+        elif win(d2t(s),2):
+            print_board(s)
+            print('You win!');break;
+        elif 0 not in d2t(s):
+            print("It's a tie");break;
+```
+
+中间可能有问题，欢迎指正。（自信点，把可能去了
