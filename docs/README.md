@@ -11,6 +11,8 @@ Book Hosted On GitHub Pages:  https://holazzer.github.io/RL-book-zh-cn/
 
 中间会出现术语混用的情况，比如增强学习和强化学习，tomato，tomoto，我觉得问题不大。
 
+**从2.2开始，我深感谷歌翻译不妥，所以从2.2以后都是我自己写的。**
+
 
 ## 资源
 
