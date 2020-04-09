@@ -150,5 +150,95 @@ $\beta_n = \alpha / \bar{o_n}$，$\alpha$是一个常数，$\bar{o_n}$是一个�
 
 ## 2.7 置信上限动作选择
 
+有一个小问题：如果一直选择的都是估计的值最大的动作，那有可能这个动作他不是最好的，那你就一直选不到最好的。咱们的$\epsilon$-贪心可以让你不选那个估计最好的，但是那个是随便选的，咱们还是按照探索和利用的思想，选的这个最好是比较接近最大值，同时还考虑了未知因素。一种做法就是，按照这个方法选：
+$$
+A_t = \underset{a}{argmax}\Big[Q_t(a)+c\sqrt{\dfrac{\ln t}{N_t(a)}} \Big]
+$$
+
+$N_t(a)$表示动作$a$在前$t-1$次被选中的次数，$c$控制探索的度。
+
+为什么叫置信上限(upper confidence bound,UCB)动作选择呢？因为根号下面是对未知性和方差的一个衡量，$\ln t$越增越慢，$N_t(a)$则会稳健地增加，表示我们对事情的了解随着时间越来越多，未知性越来越小。
 
 
+
+UCB效果很好，但是很难扩展。
+
+
+![](images/ch2_fig4.png)
+
+图2.4 UCB表现
+
+
+**练习2.8 UCB尖刺** 图2.4中在第11步出现了一个大尖刺。为什么会出现？注意你的答案不仅需要解释为什么第11步奖励增加了，还需要解释为什么后面又掉了。提示：如果c=1，这个刺不那么明显。
+
+
+## 2.8 梯度摇臂算法
+
+之前我们使用奖励的值函数来确定下一个动作，其实这是没有必要的，我们不需要知道奖励的具体值也可以选择，那就是根据**偏好**(preference)选择。
+
+这是很简单的想法嘛！比如你喜欢吃苹果不喜欢吃梨，那么有苹果和梨你就会选苹果，但是你肯定没有给它们一个具体的值吧。现在我们就给一个值，这个值仅仅是从数字大小关系表示偏好的大小，数字的值没有意义。这个函数记为$H_t(a)$.
+
+我们使用softmax分布来计算选择的概率，$P(A_t=a)=\dfrac{e^{H_t(a)}}{\sum_{b=1}^ke^{H_t(a_b)}}=\pi_t(a)$，现在$\pi_t(a)$就是选择各个动作的概率函数了。
+
+**练习2.9** 证明：如果只有两个动作，softmax分布和*sigmoid(也叫logistic)*是等价的。$Sigmoid(x) = \dfrac{1}{1+e^{-x}}$
+
+结论：用梯度来更新H值的更新公式：
+
+$$
+H_{t+1} = H_t(A_t) + \alpha(R_t-\bar{R_t})(1-\pi_t(A_t)),
+\\
+H_{t+1} = H_t(a) - \alpha(R_t-\bar{R_t})\pi_t(a), \forall a\neq A_t
+$$
+
+证明：
+
+事实上，和机器学习中的梯度法一样，这里也是用梯度更新，这里用$H_t$来更新$R_t$的期望
+
+$$H_{t+1}(a) = H_t(a) + \alpha\dfrac{\partial\mathbb{E}[R_t]}{\partial H_t(a)}$$
+
+记$S_a$为所有动作的集合，
+$$
+\dfrac{\partial \mathbb{E}[R_t]}{\partial H_t(a)} = \dfrac{\partial}{\partial H_t(a)}\Big[\sum_{x \in S_a}\pi_t(x)q_*(x)\Big] = \sum_{x \in S_a}q_*(a)\dfrac{\partial \pi_t(x)}{\partial H_t(a)} =  \sum_{x \in S_a}(q_*(x)-B_t)\dfrac{\partial \pi_t(x)}{\partial H_t(a)}
+$$
+$B_t$是一个常数，这一步因为：
+$$
+\sum_{x \in S_a}B_t\dfrac{\partial \pi_t(x)}{\partial H_t(a)} = B_t\dfrac{\partial \sum_{x \in S_a} \pi_t(x)}{\partial H_t(a)}
+= \dfrac{\partial B_t}{\partial H_t(a)} = 0
+$$
+
+把式子写成期望的形式：
+
+$$
+\dfrac{\partial \mathbb{E}[R_t]}{\partial H_t(a)} =  \sum_{x \in S_a}\pi_t(x)(q_*(x)-B_t)\dfrac{\partial \pi_t(x)}{\partial H_t(a)}\dfrac{1}{\pi_t(x)}
+= \mathbb{E}[(q_*(A_t)-B_t)\dfrac{\partial \pi_t(A_t)}{\partial H_t(a)}\dfrac{1}{\pi_t(A_t)} ]
+$$
+
+这时候，由于$E[R_t|A_t]=q_*(A_t)$（定义），可以把方括号$q_*(A_t)$换成$R_t$。
+
+若$x=A_t$,(c是与求导无关的东西)
+$$
+\dfrac{\partial \pi_t(x)}{\partial H_t(a)}=\dfrac{\partial \dfrac{e^{H_t(x)}}{ e^{H_t(x)} + c }}{\partial H_t(x)} = \pi_t(x) - \pi^2_t(x) = \pi_t(x)(1-\pi_t(x))
+$$
+若$x\neq A_t$,(c是与求导无关的东西)
+
+$$
+\dfrac{\partial \pi_t(x)}{\partial H_t(a)}=\dfrac{\partial \dfrac{c}{ e^{H_t(x)} + c }}{\partial H_t(x)} = -\pi^2_t(x)
+
+$$
+总结起来就是：$\dfrac{\partial \pi_t(x)}{\partial H_t(a)}=\pi_t(x)(\mathbf{1}_{a=x}-\pi_t(a) )$
+
+带回去可以得到：
+$\mathbb{E}[(R_t-\bar{R_t})(\mathbf{1}_{a=A_t}-\pi_t(a))]$
+
+这就是我们要求的梯度，用这个值来更新。
+
+
+## 2.9 关联搜索(情景下的赌博机)
+
+之前的问题都相当于瞎猫撞死耗子，耗子是死的不会动。现在如果耗子是活的，会跑，问题就不能用原来的这些方法了。
+
+还是距赌博机的例子，真正的老虎机上史有灯泡的，显示着各种图标，假设这些对于赌博机出钱有预示作用，比如，红色的东跑亮往往预示着这根摇臂出钱概率高等，这些信息在之前我们都没有用到。这就是关联搜索，因为不仅需要搜索(也就是探索)，也需要关联，把情景、情况（状态）和行动关联起来。下一章就开始讲这种问题啦！
+
+**练习2.10** 加入你面对一个2-摇臂的任务，但是奖励的真值是随机的。具体来说，有0.5的概率动作1、2的奖励是0.1,0.2(情况A)，另外0.5的概率奖励是0.9,0.8(情况B). 你不是神仙，不知道是哪种情况，这样你怎么选择动作来取得收益最大化，期望是什么？假设有神仙告诉你了是A还是B，这就变成关联搜索任务了！那又该怎么做，期望是什么？
+
+## Extra
